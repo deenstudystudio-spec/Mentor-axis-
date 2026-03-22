@@ -1,2 +1,2 @@
-# Mentor-axis-
+# Mentor-axis
 My AI learning platform
