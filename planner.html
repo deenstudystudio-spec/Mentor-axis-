@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mentor Axis — Study Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f0fdf8;
+    --white: #ffffff;
+    --mint: #10b981;
+    --mint-light: #d1fae5;
+    --mint-mid: #6ee7b7;
+    --coral: #f97316;
+    --yellow: #fbbf24;
+    --purple: #8b5cf6;
+    --blue: #3b82f6;
+    --text: #1a2e25;
+    --muted: #6b7c74;
+    --border: #c6f0e1;
+    --shadow: 0 4px 24px rgba(16,185,129,0.10);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; min-height: 100vh; }
+
+  .deco { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0.10; }
+  .deco1 { width: 400px; height: 400px; background: var(--blue); top: -120px; right: -80px; }
+  .deco2 { width: 300px; height: 300px; background: var(--yellow); bottom: -80px; left: -60px; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 6%;
+    background: rgba(240,253,248,0.92); backdrop-filter: blur(16px);
+    border-bottom: 1.5px solid var(--border);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--mint), #059669); border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+  .logo-icon svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .logo-text { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.25rem; color: var(--text); }
+  .logo-text span { color: var(--mint); }
+  .nav-back { color: var(--muted); text-decoration: none; font-size: 0.88rem; font-weight: 600; transition: color 0.2s; }
+  .nav-back:hover { color: var(--mint); }
+
+  .main { position: relative; z-index: 1; padding: 100px 6% 60px; max-width: 860px; margin: 0 auto; }
+
+  .page-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 100px; background: #eff6ff; color: #1d4ed8; font-size: 0.78rem; font-weight: 700; margin-bottom: 16px; }
+  .page-title { font-family: 'Nunito', sans-serif; font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
+  .page-title span { color: var(--blue); }
+  .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 36px; line-height: 1.6; }
+
+  /* FORM CARD */
+  .form-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 24px; padding: 36px; box-shadow: var(--shadow); }
+  .form-card h2 { font-family: 'Nunito', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 24px; }
+
+  .form-group { margin-bottom: 22px; }
+  .form-label { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+  input[type="text"], input[type="date"], input[type="number"], select {
+    width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg); font-family: 'Poppins', sans-serif; font-size: 0.88rem;
+    color: var(--text); outline: none; transition: border 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--mint); }
+
+  /* SUBJECTS LIST */
+  .subjects-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+  .subject-row {
+    display: grid; grid-template-columns: 1fr 140px 44px; gap: 10px; align-items: center;
+    background: var(--bg); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px;
+  }
+  .subject-row input { border: none; background: transparent; padding: 0; font-size: 0.88rem; }
+  .subject-row input:focus { border: none; outline: none; }
+  .subject-row select { border: none; background: transparent; padding: 0 4px; font-size: 0.82rem; color: var(--muted); }
+  .subject-row select:focus { border: none; outline: none; }
+  .remove-subject { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--white); color: var(--muted); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+  .remove-subject:hover { border-color: #ef4444; color: #ef4444; background: #fff1f2; }
+
+  .btn-add-subject {
+    display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+    border: 2px dashed var(--mint-mid); border-radius: 12px; background: transparent;
+    color: var(--mint); font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    font-family: 'Poppins', sans-serif; transition: all 0.2s; width: 100%; justify-content: center;
+  }
+  .btn-add-subject:hover { background: var(--mint-light); border-color: var(--mint); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .hours-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hour-btn {
+    padding: 10px 18px; border: 2px solid var(--border); border-radius: 12px;
+    background: var(--white); color: var(--muted); font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.2s;
+  }
+  .hour-btn.active { border-color: var(--blue); background: #eff6ff; color: var(--blue); }
+  .hour-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  .btn-generate {
+    width: 100%; padding: 16px; border: none; border-radius: 16px; margin-top: 8px;
+    background: linear-gradient(135deg, var(--blue), #2563eb);
+    color: white; font-family: 'Poppins', sans-serif; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+    transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59,130,246,0.45); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .error-box { display: none; align-items: center; gap: 14px; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 14px; padding: 14px 18px; margin-top: 14px; }
+  .error-box.show { display: flex; }
+  .error-box p { font-size: 0.85rem; color: #be123c; font-weight: 600; }
+
+  /* LOADING */
+  .loading { display: none; flex-direction: column; align-items: center; padding: 60px; background: var(--white); border-radius: 24px; border: 1.5px solid var(--border); box-shadow: var(--shadow); margin-top: 28px; text-align: center; }
+  .loading.show { display: flex; }
+  .spinner { width: 52px; height: 52px; border: 4px solid #eff6ff; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.9s linear infinite; margin-bottom: 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading h3 { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1.15rem; margin-bottom: 8px; }
+  .loading p { color: var(--muted); font-size: 0.88rem; }
+
+  /* PLAN OUTPUT */
+  .plan-output { display: none; margin-top: 28px; }
+  .plan-output.show { display: block; }
+
+  .plan-header-card {
+    background: linear-gradient(135deg, var(--blue), #2563eb);
+    border-radius: 20px; padding: 28px 32px; margin-bottom: 24px; color: white;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .plan-header-left h2 { font-family: 'Nunito', sans-serif; font-size: 1.5rem; font-weight: 900; margin-bottom: 4px; }
+  .plan-header-left p { font-size: 0.88rem; opacity: 0.85; }
+  .plan-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+  .plan-stat { text-align: center; }
+  .plan-stat-num { font-family: 'Nunito', sans-serif; font-size: 1.6rem; font-weight: 900; }
+  .plan-stat-label { font-size: 0.72rem; opacity: 0.8; font-weight: 600; }
+
+  /* TIPS */
+  .tips-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .tip-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow); }
+  .tip-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .tip-text { font-size: 0.82rem; font-weight: 600; color: var(--text); line-height: 1.5; }
+
+  /* DAY CARDS */
+  .days-list { display: flex; flex-direction: column; gap: 16px; }
+  .day-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .day-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 22px; cursor: pointer; transition: background 0.2s;
+  }
+  .day-header:hover { background: var(--bg); }
+  .day-header-left { display: flex; align-items: center; gap: 12px; }
+  .day-num { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 0.95rem; color: white; flex-shrink: 0; }
+  .day-title { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem; }
+  .day-date { font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-top: 1px; }
+  .day-hours { font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; background: var(--mint-light); color: #065f46; }
+  .day-toggle { font-size: 0.9rem; color: var(--muted); transition: transform 0.3s; }
+  .day-toggle.open { transform: rotate(180deg); }
+
+  .day-body { display: none; border-top: 1.5px solid var(--border); padding: 16px 22px; }
+  .day-body.open { display: block; }
+
+  .session-item { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .session-item:last-child { border-bottom: none; }
+  .session-time { font-size: 0.75rem; font-weight: 700; color: var(--muted); width: 70px; flex-shrink: 0; padding-top: 2px; }
+  .session-content { flex: 1; }
+  .session-subject { font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+  .session-topic { font-size: 0.8rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+  .session-duration { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 100px; white-space: nowrap; flex-shrink: 0; }
+
+  .diff-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+  .diff-easy { background: var(--mint-light); color: #065f46; }
+  .diff-medium { background: #fef3c7; color: #92400e; }
+  .diff-hard { background: #fee2e2; color: #991b1b; }
+
+  /* BREAK ITEM */
+  .break-item { display: flex; gap: 14px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); opacity: 0.6; }
+  .break-item:last-child { border-bottom: none; }
+  .break-label { font-size: 0.82rem; font-weight: 600; color: var(--muted); font-style: italic; }
+
+  /* BUTTONS */
+  .plan-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .btn-reset { padding: 13px 28px; border: 2px solid var(--border); border-radius: 14px; background: var(--white); color: var(--text); font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-reset:hover { border-color: var(--mint); color: var(--mint); }
+  .btn-print { padding: 13px 28px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--mint), #059669); color: white; font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(16,185,129,0.3); transition: all 0.2s; }
+  .btn-print:hover { transform: translateY(-2px); }
+
+  @media (max-width: 600px) {
+    .page-title { font-size: 1.7rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .subject-row { grid-template-columns: 1fr 110px 36px; }
+    .plan-header-card { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deco deco1"></div>
+<div class="deco deco2"></div>
+
+<nav>
+  <a class="logo" href="mentor-axis.html">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="logo-text">Mentor<span>Axis</span></div>
+  </a>
+  <a class="nav-back" href="mentor-axis.html">← Back to Home</a>
+</nav>
+
+<div class="main">
+  <div class="page-badge">📅 Study Planner</div>
+  <h1 class="page-title">Your Personal <span>Study Plan!</span></h1>
+  <p class="page-sub">Fill in your subjects, exam date, and available hours — our AI will build you a smart day-by-day study schedule so you never feel lost!</p>
+
+  <!-- FORM -->
+  <div class="form-card" id="formCard">
+    <h2>⚙️ Set Up Your Study Plan</h2>
+
+    <!-- SUBJECTS -->
+    <div class="form-group">
+      <div class="form-label">📚 Subjects & Difficulty</div>
+      <div class="subjects-list" id="subjectsList">
+        <div class="subject-row">
+          <input type="text" placeholder="e.g. Mathematics" class="subject-input"/>
+          <select class="diff-select">
+            <option value="Easy">😊 Easy</option>
+            <option value="Medium" selected>🤔 Medium</option>
+            <option value="Hard">😰 Hard</option>
+          </select>
+          <button class="remove-subject" onclick="removeSubject(this)">✕</button>
+        </div>
+        <div class="subject-row">
+          <input type="text" placeholder="e.g. Biology" class="subject-input"/>
+          <select class="diff-select">
+            <option value="Easy">😊 Easy</option>
+            <option value="Medium" selected>🤔 Medium</option>
+            <option value="Hard">😰 Hard</option>
+          </select>
+          <button class="remove-subject" onclick="removeSubject(this)">✕</button>
+        </div>
+      </div>
+      <button class="btn-add-subject" id="addSubjectBtn">＋ Add Another Subject</button>
+    </div>
+
+    <!-- EXAM DATE & HOURS -->
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <div class="form-label">📅 Exam Date</div>
+        <input type="date" id="examDate"/>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <div class="form-label">⏰ Study Start Time</div>
+        <input type="text" id="startTime" placeholder="e.g. 9:00 AM"/>
+      </div>
+    </div>
+
+    <!-- HOURS PER DAY -->
+    <div class="form-group" style="margin-top:22px">
+      <div class="form-label">🕐 Study Hours Available Per Day</div>
+      <div class="hours-selector">
+        <button class="hour-btn" data-h="1">1 hr</button>
+        <button class="hour-btn" data-h="2">2 hrs</button>
+        <button class="hour-btn active" data-h="3">3 hrs</button>
+        <button class="hour-btn" data-h="4">4 hrs</button>
+        <button class="hour-btn" data-h="5">5 hrs</button>
+        <button class="hour-btn" data-h="6">6+ hrs</button>
+      </div>
+    </div>
+
+    <div class="error-box" id="errorBox">
+      <span style="font-size:1.3rem">⚠️</span>
+      <p id="errorMsg">Please fill in all fields!</p>
+    </div>
+
+    <button class="btn-generate" id="generateBtn">
+      <span>📅</span> Generate My Study Plan!
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <h3>Building your study plan... 📅</h3>
+    <p>Our AI is creating the perfect schedule just for you!</p>
+  </div>
+
+  <!-- PLAN OUTPUT -->
+  <div class="plan-output" id="planOutput">
+    <div class="plan-header-card">
+      <div class="plan-header-left">
+        <h2 id="planTitle">📅 Your Study Plan</h2>
+        <p id="planSubtitle">Personalized just for you!</p>
+      </div>
+      <div class="plan-stats">
+        <div class="plan-stat"><div class="plan-stat-num" id="statDays">0</div><div class="plan-stat-label">📆 Days</div></div>
+        <div class="plan-stat"><div class="plan-stat-num" id="statHours">0</div><div class="plan-stat-label">⏱️ Total Hrs</div></div>
+        <div class="plan-stat"><div class="plan-stat-num" id="statSubjects">0</div><div class="plan-stat-label">📚 Subjects</div></div>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips-row" id="tipsRow"></div>
+
+    <!-- DAYS -->
+    <div class="days-list" id="daysList"></div>
+
+    <div class="plan-actions">
+      <button class="btn-reset" id="resetBtn">↩ Make a New Plan</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Print My Plan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let selectedHours = 3;
+  const dayColors = ['#10b981','#3b82f6','#8b5cf6','#f97316','#22c55e','#ec4899','#14b8a6','#f59e0b','#ef4444','#06b6d4'];
+
+  // Hours selector
+  document.querySelectorAll('.hour-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.hour-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedHours = parseInt(btn.dataset.h);
+    });
+  });
+
+  // Add subject
+  document.getElementById('addSubjectBtn').addEventListener('click', () => {
+    const row = document.createElement('div');
+    row.className = 'subject-row';
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Chemistry" class="subject-input"/>
+      <select class="diff-select">
+        <option value="Easy">😊 Easy</option>
+        <option value="Medium" selected>🤔 Medium</option>
+        <option value="Hard">😰 Hard</option>
+      </select>
+      <button class="remove-subject" onclick="removeSubject(this)">✕</button>`;
+    document.getElementById('subjectsList').appendChild(row);
+  });
+
+  function removeSubject(btn) {
+    const rows = document.querySelectorAll('.subject-row');
+    if (rows.length > 1) btn.closest('.subject-row').remove();
+  }
+
+  // Set min date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('examDate').min = today;
+
+  // GENERATE
+  document.getElementById('generateBtn').addEventListener('click', async () => {
+    const subjects = [];
+    document.querySelectorAll('.subject-row').forEach(row => {
+      const name = row.querySelector('.subject-input').value.trim();
+      const diff = row.querySelector('.diff-select').value;
+      if (name) subjects.push({ name, difficulty: diff });
+    });
+
+    const examDate = document.getElementById('examDate').value;
+    const startTime = document.getElementById('startTime').value.trim() || '9:00 AM';
+
+    if (subjects.length === 0 || !examDate) {
+      document.getElementById('errorBox').classList.add('show');
+      document.getElementById('errorMsg').textContent = subjects.length === 0
+        ? 'Please add at least one subject!' : 'Please select your exam date!';
+      return;
+    }
+
+    document.getElementById('errorBox').classList.remove('show');
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('loading').classList.add('show');
+
+    const today = new Date();
+    const exam = new Date(examDate);
+    const daysLeft = Math.max(1, Math.ceil((exam - today) / (1000*60*60*24)));
+
+    const prompt = `You are a smart study planner for school students.
+
+Student details:
+- Subjects: ${subjects.map(s => `${s.name} (${s.difficulty})`).join(', ')}
+- Exam date: ${examDate} (${daysLeft} days from today)
+- Study hours per day: ${selectedHours} hours
+- Start time: ${startTime}
+
+Create a day-by-day study plan. Hard subjects get more time. Include short breaks.
+
+Return ONLY valid JSON (no markdown):
+{
+  "title": "Study Plan title",
+  "tips": [
+    { "icon": "💡", "text": "Study tip 1" },
+    { "icon": "⏰", "text": "Study tip 2" },
+    { "icon": "💪", "text": "Study tip 3" }
+  ],
+  "days": [
+    {
+      "day": 1,
+      "date": "Monday, 2 June",
+      "focus": "Main focus of the day",
+      "totalHours": ${selectedHours},
+      "sessions": [
+        {
+          "time": "${startTime}",
+          "subject": "Subject name",
+          "topic": "Specific topic to study",
+          "duration": "1 hour",
+          "type": "study"
+        },
+        {
+          "time": "10:00 AM",
+          "subject": "Break",
+          "topic": "Rest your mind",
+          "duration": "15 min",
+          "type": "break"
+        }
+      ]
+    }
+  ]
+}
+
+Generate up to ${Math.min(daysLeft, 7)} days. Keep it realistic and motivating.`;
+
+    const GEMINI_KEY = 'YOUR_GEMINI_API_KEY'; // 🔑 Replace with your key
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        }
+      );
+      const data = await res.json();
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+      document.getElementById('loading').classList.remove('show');
+      renderPlan(parsed, subjects, daysLeft);
+
+    } catch(err) {
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('formCard').style.display = 'block';
+      document.getElementById('errorBox').classList.add('show');
+      document.getElementById('errorMsg').textContent = 'Something went wrong. Please try again!';
+      console.error(err);
+    }
+  });
+
+  function renderPlan(data, subjects, daysLeft) {
+    // Header
+    document.getElementById('planTitle').textContent = `📅 ${data.title || 'Your Study Plan'}`;
+    document.getElementById('planSubtitle').textContent = `${daysLeft} days to go · ${subjects.length} subjects · ${selectedHours} hrs/day`;
+    document.getElementById('statDays').textContent = data.days.length;
+    document.getElementById('statHours').textContent = data.days.length * selectedHours;
+    document.getElementById('statSubjects').textContent = subjects.length;
+
+    // Tips
+    const tipsRow = document.getElementById('tipsRow');
+    tipsRow.innerHTML = '';
+    (data.tips || []).forEach(tip => {
+      tipsRow.innerHTML += `
+        <div class="tip-card">
+          <div class="tip-icon">${tip.icon}</div>
+          <div class="tip-text">${tip.text}</div>
+        </div>`;
+    });
+
+    // Days
+    const daysList = document.getElementById('daysList');
+    daysList.innerHTML = '';
+    data.days.forEach((day, i) => {
+      const color = dayColors[i % dayColors.length];
+      const card = document.createElement('div');
+      card.className = 'day-card';
+      card.style.animationDelay = `${i * 0.08}s`;
+
+      let sessionsHTML = '';
+      (day.sessions || []).forEach(s => {
+        if (s.type === 'break') {
+          sessionsHTML += `
+            <div class="break-item">
+              <div class="session-time">${s.time}</div>
+              <div class="break-label">☕ ${s.duration} Break — ${s.topic}</div>
+            </div>`;
+        } else {
+          const diff = subjects.find(sub => sub.name.toLowerCase() === s.subject.toLowerCase())?.difficulty || 'Medium';
+          const diffClass = diff === 'Easy' ? 'diff-easy' : diff === 'Hard' ? 'diff-hard' : 'diff-medium';
+          const diffEmoji = diff === 'Easy' ? '😊' : diff === 'Hard' ? '😰' : '🤔';
+          sessionsHTML += `
+            <div class="session-item">
+              <div class="session-time">${s.time}</div>
+              <div class="session-content">
+                <div class="session-subject">
+                  📖 ${s.subject}
+                  <span class="diff-badge ${diffClass}">${diffEmoji} ${diff}</span>
+                </div>
+                <div class="session-topic">${s.topic}</div>
+              </div>
+              <div class="session-duration" style="background:${color}22;color:${color}">${s.duration}</div>
+            </div>`;
+        }
+      });
+
+      card.innerHTML = `
+        <div class="day-header" onclick="toggleDay(this)">
+          <div class="day-header-left">
+            <div class="day-num" style="background:${color}">D${day.day}</div>
+            <div>
+              <div class="day-title">${day.focus || 'Study Session'}</div>
+              <div class="day-date">📆 ${day.date}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="day-hours">⏱️ ${day.totalHours} hrs</div>
+            <div class="day-toggle ${i === 0 ? 'open' : ''}">▼</div>
+          </div>
+        </div>
+        <div class="day-body ${i === 0 ? 'open' : ''}">${sessionsHTML}</div>`;
+
+      daysList.appendChild(card);
+    });
+
+    document.getElementById('planOutput').classList.add('show');
+  }
+
+  function toggleDay(header) {
+    const body = header.nextElementSibling;
+    const toggle = header.querySelector('.day-toggle');
+    body.classList.toggle('open');
+    toggle.classList.toggle('open');
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('planOutput').classList.remove('show');
+    document.getElementById('formCard').style.display = 'block';
+    document.getElementById('daysList').innerHTML = '';
+    document.getElementById('tipsRow').innerHTML = '';
+  });
+</script>
+</body>
+</html>
