@@ -327,7 +327,7 @@
 </div>
 
 <script>
-  const GEMINI_KEY = AIzaSyAYaD9LqqHTZ7s-e2NOHn4TMavUiqxLC0Q// 🔑 Replace with your key
+  const GEMINI_KEY = 'YOUR_GEMINI_API_KEY'; // 🔑 Replace with your key
 
   let conversationHistory = [];
   let currentTopic = '';
@@ -494,35 +494,36 @@ Guidelines:
     try {
       const topicContext = currentTopic ? `The student is currently studying: ${currentTopic}. ` : '';
       const subjectContext = currentSubject ? `Subject: ${currentSubject}. ` : '';
-
-      const messages = [
-        { role: 'user', parts: [{ text: systemPrompt + '\n\n' + topicContext + subjectContext + '\n\nStudent says: ' + conversationHistory[0].parts[0].text }] },
-        ...conversationHistory.slice(1)
-      ];
+      const fullPrompt = systemPrompt + '\n\n' + topicContext + subjectContext + '\n\nConversation so far:\n' +
+        conversationHistory.map(m => (m.role === 'user' ? 'Student: ' : 'Tutor: ') + m.parts[0].text).join('\n') +
+        '\n\nNow respond as the tutor to the student\'s last message.';
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: messages })
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+          })
         }
       );
 
       const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't understand that. Could you rephrase your question?";
 
       conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
 
       hideTyping();
-
-      // Generate follow-up suggestions based on reply
       const followups = generateFollowups(text, reply);
       addAIMessage(reply, followups);
 
     } catch(err) {
       hideTyping();
-      addAIMessage("Oops! Something went wrong. Please check your internet connection and try again! 😅");
+      console.error('Tutor error:', err);
+      addAIMessage("Oops! Something went wrong. Please make sure your Gemini API key is correct and try again! 😅");
       conversationHistory.pop();
     }
 

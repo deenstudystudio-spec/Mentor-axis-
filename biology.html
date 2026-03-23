@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Mentor Axis —  Diagrams</title>
+<title>Mentor Axis — Biology Diagrams</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -286,6 +286,7 @@
 </div>
 
 <script>
+  const GEMINI_KEY = 'YOUR_GEMINI_API_KEY'; // 🔑 Replace with your key
   const colors = ['#10b981','#3b82f6','#8b5cf6','#f97316','#22c55e','#ec4899','#14b8a6','#f59e0b'];
 
   const defaultDiagrams = [
@@ -353,17 +354,17 @@ Return ONLY valid JSON (no markdown):
 
 Return 1 to 4 most relevant biology diagrams matching the search. If nothing matches biology, return empty array.`;
 
-      const GEMINI_KEY =AIzaSyAYaD9LqqHTZ7s-e2NOHn4TMavUiqxLC0Q 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }] })
         }
       );
       const data = await res.json();
-      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (data.error) throw new Error(data.error.message);
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"diagrams":[]}';
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
       document.getElementById('loading').classList.remove('show');
@@ -391,6 +392,7 @@ Return 1 to 4 most relevant biology diagrams matching the search. If nothing mat
       document.getElementById('resultsSection').style.display = 'block';
 
     } catch(err) {
+      console.error('Search error:', err);
       document.getElementById('loading').classList.remove('show');
       document.getElementById('searchBtn').disabled = false;
       document.getElementById('emptyState').classList.add('show');
@@ -433,10 +435,14 @@ IMPORTANT for svgDiagram:
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 2048 }
+          })
         }
       );
       const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
       const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
