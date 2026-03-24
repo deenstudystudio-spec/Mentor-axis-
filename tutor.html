@@ -327,7 +327,8 @@
 </div>
 
 <script>
-  const GEMINI_KEY = AIzaSyAYaD9LqqHTZ7s-e2NOHn4TMavUiqxLC0Q
+  const GEMINI_KEY = 'YOUR_GEMINI_API_KEY'; // 🔑 Replace with your key
+
   let conversationHistory = [];
   let currentTopic = '';
   let currentSubject = '';
@@ -487,15 +488,15 @@ Guidelines:
 
     addUserMessage(text);
     conversationHistory.push({ role: 'user', parts: [{ text }] });
-
     showTyping();
 
     try {
       const topicContext = currentTopic ? `The student is currently studying: ${currentTopic}. ` : '';
       const subjectContext = currentSubject ? `Subject: ${currentSubject}. ` : '';
-      const fullPrompt = systemPrompt + '\n\n' + topicContext + subjectContext + '\n\nConversation so far:\n' +
+      const fullPrompt = systemPrompt + '\n\n' + topicContext + subjectContext +
+        '\n\nConversation so far:\n' +
         conversationHistory.map(m => (m.role === 'user' ? 'Student: ' : 'Tutor: ') + m.parts[0].text).join('\n') +
-        '\n\nNow respond as the tutor to the student\'s last message.';
+        '\n\nNow respond as the tutor to the latest student message.';
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
@@ -511,25 +512,26 @@ Guidelines:
 
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't understand that. Could you rephrase your question?";
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "I could not understand that. Could you rephrase your question?";
 
       conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
-
       hideTyping();
-      const followups = generateFollowups(text, reply);
-      addAIMessage(reply, followups);
+      addAIMessage(reply, generateFollowups());
 
     } catch(err) {
       hideTyping();
       console.error('Tutor error:', err);
-      addAIMessage("Oops! Something went wrong. Please make sure your Gemini API key is correct and try again! 😅");
+      addAIMessage("Could not reach the AI. Please check your Gemini API key is correctly added and try again!");
       conversationHistory.pop();
-    }
 
-    isTyping = false;
-    document.getElementById('sendBtn').disabled = false;
-    input.focus();
+    } finally {
+      isTyping = false;
+      document.getElementById('sendBtn').disabled = false;
+      input.focus();
+    }
   }
+
 
   function generateFollowups(question, reply) {
     const suggestions = [
