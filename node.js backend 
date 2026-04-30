@@ -1,0 +1,54 @@
+mentor-axis-backend
+cd mentor-axis-backend
+npm init -y
+npm install express node-fetch cors dotenv
+GEMINI_KEY=AIzaSyAEDx9m9k_FmDwXEx7woCC_-et7OFwFhi4
+import express from "express";
+import fetch from "node-fetch";
+import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.post("/chat", async (req, res) => {
+  try {
+    const { message, systemPrompt } = req.body;
+
+    const apiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: systemPrompt + "\n\n" + message
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
+
+    const data = await apiRes.json();
+    res.json(data);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Something broke" });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Server running on http://localhost:3000");
+});
+node server.js
